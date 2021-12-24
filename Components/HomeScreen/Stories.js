@@ -1,11 +1,20 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet, ScrollView, Image } from "react-native";
 
-const Stories = () => {
+const Stories = ({ profilePic, username }) => {
   const [dummyData, setDummyData] = useState([1, 2, 3, 4, 5, 6, 7]);
   return (
     <View style={{ marginBottom: 13 }}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        <View style={{ alignItems: "center" }}>
+          <Image
+            style={style.image}
+            source={{
+              uri: profilePic,
+            }}
+          />
+          <Text style={{ color: "white" }}>{username}</Text>
+        </View>
         {dummyData.map((data, index) => {
           return (
             <View key={index} style={{ alignItems: "center" }}>

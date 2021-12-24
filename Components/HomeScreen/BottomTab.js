@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { getAuth, signOut } from "firebase/auth";
 import { auth } from "../../firebase";
-const BottomTab = ({ navigation, retrivePosts }) => {
+const BottomTab = ({ navigation, retrivePosts, profilePic }) => {
   const signout = () => {
     signOut(auth)
       .then(() => {
@@ -51,7 +51,7 @@ const BottomTab = ({ navigation, retrivePosts }) => {
         <Image
           style={{ width: 30, height: 30, borderRadius: 50 }}
           source={{
-            uri: "https://www.pexels.com/photo/220453/download/?search_query=profile%20pic&amp;tracking_id=u5ngvvlvieb",
+            uri: profilePic,
           }}
         />
       </TouchableOpacity>

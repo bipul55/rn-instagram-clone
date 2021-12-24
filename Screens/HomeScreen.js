@@ -12,10 +12,22 @@ import { onAuthStateChanged } from "firebase/auth";
 const HomeScreen = ({ navigation }) => {
   const [posts, setPosts] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [screenLoading, setScreenLoading] = useState(true);
+  const [postLoading, setPostLoading] = useState(true);
 
+  const [userInfo, setUserInfo] = useState({});
+  const getUserInfo = new Promise(async (resolve, reject) => {
+    const q = query(
+      collection(db, "users"),
+      where("user_uid", "==", currentUser.uid)
+    );
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach((doc) => {
+      resolve(doc.data());
+    });
+  });
   const fetchPosts = async () => {
-    setLoading(true);
+    setPostLoading(true);
     var temp = [];
     const q = query(collection(db, "posts"));
     const querySnapshot = await getDocs(q);
@@ -23,71 +35,94 @@ const HomeScreen = ({ navigation }) => {
       temp.push(doc);
     });
     setPosts([...temp]);
-    setLoading(false);
+    setPostLoading(false);
   };
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      setCurrentUser(user);
+    } else {
+      setCurrentUser(null);
+    }
+  });
+
   useEffect(() => {
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setCurrentUser(user);
-      } else {
-        setCurrentUser(null);
+    getUserInfo.then((data) => {
+      setUserInfo({ ...data });
+      setScreenLoading(false);
+      if (posts.length < 1) {
+        fetchPosts();
       }
     });
   }, []);
-  useEffect(() => {
-    if (posts.length < 1) {
-      fetchPosts();
-    }
-  }, []);
 
   return (
-    <SafeAreaView style={style.container}>
-      <HomeScreenHeader />
-      <ScrollView>
-        <View>
-          <Stories />
-          {loading ? (
-            <View>
-              <Text
-                style={{
-                  color: "white",
-                  textAlign: "center",
-                }}
-              >
-                Loading
-              </Text>
-            </View>
-          ) : (
-            posts.length > 0 &&
-            posts.map((post, index) => {
-              return (
-                <View key={index}>
-                  <Posts
-                    p={post.data()}
-                    id={post.id}
-                    currentUserEmail={currentUser.email}
-                  />
-                </View>
-              );
-            })
-          )}
+    <>
+      {screenLoading ? (
+        <View style={style.loadingContainer}>
+          <Text
+            style={{
+              color: "white",
+              textAlign: "center",
+            }}
+          >
+            Loading
+          </Text>
         </View>
-      </ScrollView>
-      <BottomTab
-        navigation={navigation}
-        retrivePosts={() => {
-          setPosts([]);
-          fetchPosts();
-        }}
-      />
-    </SafeAreaView>
+      ) : (
+        <SafeAreaView style={style.container}>
+          <HomeScreenHeader />
+          <ScrollView>
+            <View>
+              <Stories
+                profilePic={userInfo.progilePic}
+                username={userInfo.username}
+              />
+              {postLoading ? (
+                <View>
+                  <Text style={{ color: "white", textAlign: "center" }}>
+                    Loading Posts
+                  </Text>
+                </View>
+              ) : (
+                posts.length > 0 &&
+                posts.map((post, index) => {
+                  return (
+                    <View key={index}>
+                      <Posts
+                        p={post.data()}
+                        id={post.id}
+                        currentUserEmail={currentUser.email}
+                      />
+                    </View>
+                  );
+                })
+              )}
+            </View>
+          </ScrollView>
+          <BottomTab
+            navigation={navigation}
+            retrivePosts={() => {
+              setPosts([]);
+              fetchPosts();
+            }}
+            profilePic={userInfo.progilePic}
+          />
+        </SafeAreaView>
+      )}
+    </>
   );
 };
 const style = StyleSheet.create({
   container: {
     backgroundColor: "black",
     flex: 1,
-    // height: "100%",
+  },
+  loadingContainer: {
+    backgroundColor: "black",
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 

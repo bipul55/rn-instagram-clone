@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { StyleSheet, Text, SafeAreaView, StatusBar } from "react-native";
 import AuthNavigation from "./AuthNavigation";
 export default function App() {
+  console.disableYellowBox = true;
   return (
     <SafeAreaView style={style.container}>
       <AuthNavigation />
