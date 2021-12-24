@@ -16,15 +16,21 @@ const HomeScreen = ({ navigation }) => {
   const [postLoading, setPostLoading] = useState(true);
 
   const [userInfo, setUserInfo] = useState({});
+
   const getUserInfo = new Promise(async (resolve, reject) => {
     const q = query(
       collection(db, "users"),
       where("user_uid", "==", currentUser.uid)
     );
-    const querySnapshot = await getDocs(q);
-    querySnapshot.forEach((doc) => {
-      resolve(doc.data());
-    });
+    getDocs(q)
+      .then((data) => {
+        data.forEach((doc) => {
+          resolve(doc.data());
+        });
+      })
+      .catch((err) => {
+        console.log("error  occured", err);
+      });
   });
   const fetchPosts = async () => {
     setPostLoading(true);
@@ -47,14 +53,17 @@ const HomeScreen = ({ navigation }) => {
   });
 
   useEffect(() => {
-    getUserInfo.then((data) => {
-      setUserInfo({ ...data });
-      setScreenLoading(false);
-      if (posts.length < 1) {
-        fetchPosts();
-      }
-    });
-  }, []);
+    if (currentUser) {
+      getUserInfo.then((data) => {
+        setUserInfo({ ...data });
+        console.log("data updated");
+        setScreenLoading(false);
+        if (posts.length < 1) {
+          fetchPosts();
+        }
+      });
+    }
+  }, [currentUser]);
 
   return (
     <>
