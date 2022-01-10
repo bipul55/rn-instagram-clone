@@ -22,9 +22,13 @@
     "react-icons": "^4.3.1",
     "react-native": "0.64.3",
     "react-native-elements": "^3.4.2",
+    "react-native-image-crop-picker": "^0.37.2",
+    "react-native-instagram-login": "^2.0.5",
     "react-native-safe-area-context": "3.3.2",
     "react-native-screens": "~3.10.1",
-    "react-native-web": "0.17.1"
+    "react-native-tiktok": "^1.0.1",
+    "react-native-web": "0.17.1",
+    "react-native-webview": "^11.15.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9"

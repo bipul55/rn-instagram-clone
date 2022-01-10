@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -11,11 +11,12 @@ import {
 } from "react-native";
 import { auth } from "../firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
-
+import InstagramLogin from "react-native-instagram-login";
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState(null);
   const [password, setPassword] = useState(null);
   const [loading, setLoading] = useState(false);
+  const InstaLoginRef = useRef(null);
 
   const login = async () => {
     setLoading(true);
@@ -43,7 +44,53 @@ const LoginScreen = ({ navigation }) => {
         );
       });
   };
+  // Instragram login success
+  const loginSuccess = async (data) => {
+    /* 
+    data={
+      user_id;
+      access_token
+    }
+    */
 
+    // fetch for the users media, i.e Posts
+    fetch(
+      `https://graph.instagram.com/me/media?fields=id,caption&access_token=${data.access_token}`
+    )
+      .then((response) => response.json())
+      .then((post) => {
+        /*
+         post.data is an array of objects that contain post id and post caption 
+        */
+        //  after getting post id, we fetch the total post information
+        fetch(
+          `https://graph.instagram.com/${post.data[0].id}?fields=id,media_type,media_url,username,timestamp&access_token=${data.access_token}`
+        )
+          .then((p) => p.json())
+          .then((p) => {
+            // p is an post information
+            console.log(p);
+          });
+      })
+      .catch((err) => {
+        console.log("err", err);
+      });
+    // fetch the user information, ie username
+    fetch(
+      `https://graph.instagram.com/me?fields=id,username&access_token=${data.access_token}`
+    )
+      .then((response) => response.json())
+      .then((d) => {
+        console.log("response data", d);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  // useEffect(() => {
+  //   console.log("useEffect", InstaLoginRef);
+  // }, [InstaLoginRef]);
   return (
     <View style={style.container}>
       <View style={style.logoContainer}>
@@ -54,6 +101,33 @@ const LoginScreen = ({ navigation }) => {
           }}
         />
       </View>
+      <TouchableOpacity
+        style={style.insta_login}
+        onPress={() => {
+          InstaLoginRef.current.show();
+        }}
+      >
+        <Image
+          style={{ height: 50, width: 50, marginRight: 20 }}
+          source={{
+            uri: "https://img.icons8.com/color/48/000000/instagram-new--v1.png",
+          }}
+        />
+        <Text style={{ fontSize: 15, color: "white" }}>
+          Login With Instagram
+        </Text>
+      </TouchableOpacity>
+      {/* instagram Login */}
+      <InstagramLogin
+        ref={InstaLoginRef}
+        appId="1817113448678856"
+        appSecret="31289c2d276222f1e475eff35ca2f1e4"
+        redirectUrl="https://github.com/"
+        scopes={["user_profile", "user_media"]}
+        onLoginSuccess={loginSuccess}
+        onLoginFailure={(data) => console.log(data)}
+        wrapperStyle={{ borderWidth: 0 }}
+      />
       <View style={{ width: "100%", marginTop: 50 }}>
         <TextInput
           style={style.inputField}
@@ -134,6 +208,13 @@ const style = StyleSheet.create({
     paddingTop: 50,
   },
   logoContainer: {},
+  insta_login: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#4682b4",
+    paddingLeft: 10,
+  },
   logo: {
     height: 100,
     width: 100,
