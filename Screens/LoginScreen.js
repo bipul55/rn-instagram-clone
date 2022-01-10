@@ -61,6 +61,8 @@ const LoginScreen = ({ navigation }) => {
       .then((post) => {
         /*
          post.data is an array of objects that contain post id and post caption 
+
+         post.data=[{id,caption}]
         */
         //  after getting post id, we fetch the total post information
         fetch(
